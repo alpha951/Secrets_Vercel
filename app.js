@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
+const AmazonStrategy = require('passport-amazon');
 const findOrCreate = require('mongoose-findorcreate')
 //! now using md5 (hashing function)
 // const encrypt = require("mongoose-encryption");
@@ -67,7 +68,8 @@ passport.deserializeUser(function (id, done) {
 passport.use(new GoogleStrategy({
   clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
+  // callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
+  callbackURL: "http://localhost:3000/auth/google/secrets",
   userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 },
   function (accessToken, refreshToken, profile, cb) {
@@ -83,6 +85,7 @@ passport.use(new FacebookStrategy({
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
   callbackURL: "https://secretsbykeshav.herokuapp.com/auth/facebook/secrets",
+  // callbackURL: "http://localhost:3000/auth/facebook/secrets",
   profileFields: ['id', 'displayName', 'photos', 'email']
 },
   function (accessToken, refreshToken, profile, cb) {
@@ -92,12 +95,35 @@ passport.use(new FacebookStrategy({
   }
 ));
 
+//! Amazon Strategy
+passport.use(new AmazonStrategy({
+  clientID: process.env.AMAZON_CLIENT_ID,
+  clientSecret: process.env.AMAZON_CLIENT_SECRET,
+  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/amazon/secets"
+},
+  function (accessToken, refreshToken, profile, done) {
+    User.findOrCreate({ amazonId: profile.id }, function (err, user) {
+      return done(err, user);
+    });
+  }
+));
+
+
 
 //! app.get() for home, login,register
 app.get("/", function (req, res) {
   res.render("home");
 });
 
+app.get("/login", function (req, res) {
+  res.render("login");
+});
+
+app.get("/register", function (req, res) {
+  res.render("register");
+});
+
+//! google
 app.route('/auth/google')
   .get(passport.authenticate('google', {
     scope: ['profile']
@@ -108,10 +134,6 @@ app.get("/auth/google/secrets",
   function (req, res) {
     res.redirect('/secrets');
   });
-
-app.get("/login", function (req, res) {
-  res.render("login");
-});
 
 //! facebook
 app.get('/auth/facebook',
@@ -124,10 +146,16 @@ app.get('/auth/facebook/secrets',
     res.redirect('/secrets');
   });
 
+//! amazon 
+app.get('/auth/amazon',
+  passport.authenticate('amazon'));
 
-app.get("/register", function (req, res) {
-  res.render("register");
-});
+app.get('/auth/amazon/secrets',
+  passport.authenticate('amazon', { failureRedirect: '/login' }),
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/secrets');
+  });
 
 app.get("/secrets", function (req, res) {
   let isAuthenticated = true;
