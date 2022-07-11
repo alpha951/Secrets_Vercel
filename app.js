@@ -68,8 +68,8 @@ passport.deserializeUser(function (id, done) {
 passport.use(new GoogleStrategy({
   clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  // callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
-  callbackURL: "http://localhost:3000/auth/google/secrets",
+  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
+  // callbackURL: "http://localhost:3000/auth/google/secrets",
   userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 },
   function (accessToken, refreshToken, profile, cb) {
@@ -99,7 +99,7 @@ passport.use(new FacebookStrategy({
 passport.use(new AmazonStrategy({
   clientID: process.env.AMAZON_CLIENT_ID,
   clientSecret: process.env.AMAZON_CLIENT_SECRET,
-  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/amazon/secets"
+  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/amazon/secrets"
 },
   function (accessToken, refreshToken, profile, done) {
     User.findOrCreate({ amazonId: profile.id }, function (err, user) {
