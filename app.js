@@ -108,8 +108,6 @@ passport.use(new AmazonStrategy({
   }
 ));
 
-
-
 //! app.get() for home, login,register
 app.get("/", function (req, res) {
   res.render("home");
