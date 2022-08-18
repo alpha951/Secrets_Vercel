@@ -31,7 +31,7 @@ const mongoUser = process.env.USER;
 const mongoPassword = process.env.PASSWORD;
 mongoose.connect("mongodb+srv://" + mongoUser + ":" + mongoPassword + "@cluster0.16x0e.mongodb.net/userDB", {
   useNewUrlParser: true,
-  autoIndex: false
+  useUnifiedTopology: true,
 });
 // mongoose.connect("mongodb://localhost:27017/userDB");
 
@@ -39,7 +39,9 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   google_id: String,
-  secret: [type = String]
+  secret: [type = String],
+  username: String,
+  name: String
 });
 
 //! passport-local-mongoose
@@ -65,18 +67,25 @@ passport.deserializeUser(function (id, done) {
 
 
 //! google auto 2.O
-passport.use(new GoogleStrategy({
-  clientID: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
-  // callbackURL: "http://localhost:3000/auth/google/secrets",
-  userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-},
+passport.use(new GoogleStrategy(
+  {
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
+    // callbackURL: "http://localhost:3000/auth/google/secrets",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
   function (accessToken, refreshToken, profile, cb) {
     console.log(profile);
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
+    User.findOrCreate(
+      {
+        googleId: profile.id,
+        username: profile.id,
+        name: profile.displayName,
+      },
+      function (err, user) {
+        return cb(err, user);
+      });
   }
 ));
 
@@ -89,7 +98,7 @@ passport.use(new FacebookStrategy({
   profileFields: ['id', 'displayName', 'photos', 'email']
 },
   function (accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+    User.findOrCreate({ facebookId: profile.id, username: profile.id, }, function (err, user) {
       return cb(err, user);
     });
   }
@@ -102,7 +111,7 @@ passport.use(new AmazonStrategy({
   callbackURL: "https://secretsbykeshav.herokuapp.com/auth/amazon/secrets"
 },
   function (accessToken, refreshToken, profile, done) {
-    User.findOrCreate({ amazonId: profile.id }, function (err, user) {
+    User.findOrCreate({ amazonId: profile.id, username: profile.id }, function (err, user) {
       return done(err, user);
     });
   }
@@ -215,12 +224,21 @@ app.get("/logout", function (req, res) {
   req.session.destroy((err) => res.redirect('/'));
 });
 
-//! app.post for register, login
+// app.post for register, login
 app.post("/register", function (req, res) {
-  //! passport-local-mongoose methods
+  // passport-local-mongoose methods
+  const filled = req.body;
+  let newUser = new User(
+    {
+      email: filled.username,
+      username: filled.username,
+      name: "email_login_user"
+    }
+  );
+
   User.register(
-    { username: req.body.username },
-    req.body.password,
+    newUser,
+    filled.password,
     function (err, user) {
       if (err) {
         console.log(err);
