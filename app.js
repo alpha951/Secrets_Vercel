@@ -75,7 +75,7 @@ passport.use(new GoogleStrategy(
   {
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: "https://secretsbykeshav.herokuapp.com/auth/google/secrets",
+    callbackURL: "https://secrets-deployed1.vercel.app/auth/google/secrets",
     // callbackURL: "http://localhost:3000/auth/google/secrets",
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
@@ -97,7 +97,7 @@ passport.use(new GoogleStrategy(
 passport.use(new FacebookStrategy({
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/facebook/secrets",
+  callbackURL: "https://secrets-deployed1.vercel.app/auth/facebook/secrets",
   // callbackURL: "http://localhost:3000/auth/facebook/secrets",
   profileFields: ['id', 'displayName', 'photos', 'email']
 },
@@ -112,7 +112,7 @@ passport.use(new FacebookStrategy({
 passport.use(new AmazonStrategy({
   clientID: process.env.AMAZON_CLIENT_ID,
   clientSecret: process.env.AMAZON_CLIENT_SECRET,
-  callbackURL: "https://secretsbykeshav.herokuapp.com/auth/amazon/secrets"
+  callbackURL: "https://secrets-deployed1.vercel.app/auth/amazon/secrets"
 },
   function (accessToken, refreshToken, profile, done) {
     User.findOrCreate({ amazonId: profile.id, username: profile.id }, function (err, user) {
