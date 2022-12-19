@@ -13,9 +13,13 @@ const findOrCreate = require('mongoose-findorcreate')
 //! now using md5 (hashing function)
 // const encrypt = require("mongoose-encryption");
 
-app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.set('views', path.join(__dirname, 'views'));
+app.engine('ejs', require('ejs').renderFile);
+app.set('view engine', 'ejs');
+
 //! passport js and express session app.use()
 app.use(session({
   secret: 'Our little secret.',
@@ -29,7 +33,7 @@ const mongoose = require("mongoose");
 const e = require("express");
 const mongoUser = process.env.USER;
 const mongoPassword = process.env.PASSWORD;
-mongoose.connect("mongodb+srv://" + mongoUser + ":" + mongoPassword + "@cluster0.16x0e.mongodb.net/userDB", {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
